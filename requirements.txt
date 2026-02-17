@@ -39,3 +39,5 @@ whitenoise==6.6.0
 # PostgreSQL Database
 dj-database-url==2.1.0
 psycopg[binary]==3.2.4
+
+Pillow==11.1.0
