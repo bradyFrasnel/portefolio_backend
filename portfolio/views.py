@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 from django.contrib.auth import authenticate, login
 from .serializers import ProjectSerializer, CategorySerializer, TechnologySerializer, ContactSerializer
 
@@ -88,35 +89,36 @@ class ContactViewSet(viewsets.ModelViewSet):
             # Seuls les administrateurs peuvent modifier/supprimer
             return [IsAdminOrReadOnly()]
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def AdminLoginView(request):
+class AdminLoginView(APIView):
     """
     Vue d'authentification pour l'interface admin Vue.js
     """
-    username = request.data.get('username')
-    password = request.data.get('password')
+    permission_classes = [AllowAny]
     
-    user = authenticate(username=username, password=password)
-    
-    if user is not None:
-        if user.is_staff:
-            login(request, user)
-            return Response({
-                'success': True,
-                'message': 'Authentification réussie',
-                'user': {
-                    'username': user.username,
-                    'is_staff': user.is_staff
-                }
-            }, status=status.HTTP_200_OK)
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        user = authenticate(username=username, password=password)
+        
+        if user is not None:
+            if user.is_staff:
+                login(request, user)
+                return Response({
+                    'success': True,
+                    'message': 'Authentification réussie',
+                    'user': {
+                        'username': user.username,
+                        'is_staff': user.is_staff
+                    }
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'success': False,
+                    'message': 'Accès refusé : utilisateur non administrateur'
+                }, status=status.HTTP_403_FORBIDDEN)
         else:
             return Response({
                 'success': False,
-                'message': 'Accès refusé : utilisateur non administrateur'
-            }, status=status.HTTP_403_FORBIDDEN)
-    else:
-        return Response({
-            'success': False,
-            'message': 'Identifiants incorrects'
-        }, status=status.HTTP_401_UNAUTHORIZED)
+                'message': 'Identifiants incorrects'
+            }, status=status.HTTP_401_UNAUTHORIZED)
