@@ -1,9 +1,16 @@
 from rest_framework import viewsets, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Project, Category, Technology, Contact
-from .serializers import (
-    ProjectSerializer, CategorySerializer, TechnologySerializer, ContactSerializer
-)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import authenticate, login
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import ProjectSerializer, CategorySerializer, TechnologySerializer, ContactSerializer
+
+# Vues existantes...
+
 from .permissions import IsAdminOrReadOnly, IsAuthenticatedOrReadOnly
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -81,3 +88,36 @@ class ContactViewSet(viewsets.ModelViewSet):
         else:
             # Seuls les administrateurs peuvent modifier/supprimer
             return [IsAdminOrReadOnly()]
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def AdminLoginView(request):
+    """
+    Vue d'authentification pour l'interface admin Vue.js
+    """
+    username = request.data.get('username')
+    password = request.data.get('password')
+    
+    user = authenticate(username=username, password=password)
+    
+    if user is not None:
+        if user.is_staff:
+            login(request, user)
+            return Response({
+                'success': True,
+                'message': 'Authentification réussie',
+                'user': {
+                    'username': user.username,
+                    'is_staff': user.is_staff
+                }
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'success': False,
+                'message': 'Accès refusé : utilisateur non administrateur'
+            }, status=status.HTTP_403_FORBIDDEN)
+    else:
+        return Response({
+            'success': False,
+            'message': 'Identifiants incorrects'
+        }, status=status.HTTP_401_UNAUTHORIZED)
