@@ -1,16 +1,28 @@
-# Core Django
+# Core Dependencies
 Django==6.0.2
 djangorestframework==3.15.2
-
-# CORS Support
 django-cors-headers==4.4.0
+django-filter==24.2
+drf-spectacular==0.27.2
+python-decouple==3.8
+setuptools==69.0.3
+
+# Production Server
+gunicorn==21.2.0
+
+# Static Files
+whitenoise==6.6.0
+
+# PostgreSQL Database
+dj-database-url==2.1.0
+psycopg[binary]==3.2.4
+
+# Image Processing
+Pillow==11.1.0
 
 # Cloud Storage
 cloudinary==1.41.0
 django-cloudinary-storage==0.3.0
-
-# Environment Variables
-python-decouple==3.8
 
 # Security
 django-environ==0.11.2
@@ -23,24 +35,3 @@ django-extensions==3.2.3
 factory-boy==3.3.0
 pytest==8.2.2
 pytest-django==4.8.0
-
-# Documentation
-drf-spectacular==0.27.2  # For OpenAPI/Swagger documentation
-
-# Filtering
-django-filter==24.3
-
-# Production Server
-gunicorn==21.2.0
-
-# Static Files
-whitenoise==6.6.0
-
-# PostgreSQL Database
-dj-database-url==2.1.0
-psycopg[binary]==3.2.4
-
-# JWT Authentication
-djangorestframework-simplejwt==5.3.0
-
-Pillow==11.1.0
