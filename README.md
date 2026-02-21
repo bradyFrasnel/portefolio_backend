@@ -80,6 +80,11 @@ CLOUDINARY_API_KEY=votre_api_key
 CLOUDINARY_API_SECRET=votre_api_secret
 
 CORS_ALLOWED_ORIGINS=http://localhost:5173,https://votre-frontend.com
+
+# Variables pour la création automatique du superutilisateur (optionnel)
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=votre-mot-de-passe-securise
 ```
 
 ## 📚 Documentation API
