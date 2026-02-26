@@ -27,22 +27,35 @@ class ImageProjet(models.Model):
 class Project(models.Model):
     """Modèle principal pour les projets du portfolio"""
     titre = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
-    description_courte = models.TextField(max_length=200)
-    description_longue = models.TextField()
+    slug = models.SlugField(unique=True, blank=True)
+    description = models.TextField()
     image_principale = models.ImageField(upload_to='projects/main/')
-    galerie_images = models.ManyToManyField(ImageProjet, blank=True, related_name='projets')
-    technologies = models.ManyToManyField(Technology, related_name='projets')
-    categorie = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='projets')
+    technologie = models.CharField(max_length=200, default='', help_text="Technologie principale utilisée")
     lien_github = models.URLField(blank=True)
     lien_demo = models.URLField(blank=True)
     date_creation = models.DateField(auto_now_add=True)
     date_mise_a_jour = models.DateField(auto_now=True)
-    ordre_affichage = models.IntegerField(default=0)
     est_publie = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-date_creation']
 
     def __str__(self):
         return self.titre
+    
+    def save(self, *args, **kwargs):
+        # Générer le slug automatiquement à partir du titre
+        if not self.slug:
+            from django.utils.text import slugify
+            base_slug = slugify(self.titre)
+            slug = base_slug
+            counter = 1
+            # S'assurer que le slug est unique
+            while Project.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
 class Contact(models.Model):
     """Modèle pour les messages de contact"""

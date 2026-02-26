@@ -66,6 +66,5 @@ coverage.xml
 
 # Fichiers personnels à ignorer
 .env.txt
-*.txt
 temp/
 logs/

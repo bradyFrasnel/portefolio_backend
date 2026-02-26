@@ -16,22 +16,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
     - Lecture publique pour tous les projets publiés
     - Écriture réservée aux administrateurs
     """
-    queryset = Project.objects.filter(est_publie=True).order_by('ordre_affichage', '-date_creation')
+    queryset = Project.objects.filter(est_publie=True).order_by('-date_creation')
     serializer_class = ProjectSerializer
     lookup_field = 'slug'
     permission_classes = [IsAdminOrReadOnly]
     
     # Filtres et recherche
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['categorie', 'technologies']
-    search_fields = ['titre', 'description_courte', 'description_longue']
-    ordering_fields = ['date_creation', 'ordre_affichage', 'titre']
+    search_fields = ['titre', 'description', 'technologie']
+    ordering_fields = ['date_creation', 'titre']
     
     def get_queryset(self):
-        """Optimisation des requêtes avec select_related et prefetch_related"""
-        return Project.objects.filter(est_publie=True).order_by('ordre_affichage', '-date_creation')\
-            .select_related('categorie')\
-            .prefetch_related('technologies', 'galerie_images')
+        """Optimisation des requêtes"""
+        return Project.objects.filter(est_publie=True).order_by('-date_creation')
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
