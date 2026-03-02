@@ -21,6 +21,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
     permission_classes = [IsAdminOrReadOnly]
     
+    # Désactiver CSRF pour le développement
+    authentication_classes = []
+    
     # Filtres et recherche
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['titre', 'description', 'technologie']
