@@ -156,10 +156,10 @@ CSRF_TRUSTED_ORIGINS = config(
 # Configuration des sessions pour cross-domain
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None'  # Changé de 'Lax' à 'None' pour cross-site
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
 CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'None'  # Changé de 'Lax' à 'None' pour cross-site
 
 # Configuration REST Framework
 REST_FRAMEWORK = {
