@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Applications tierces
     'rest_framework',
+    'rest_framework.authtoken',  # Ajouté pour Token Authentication
     'corsheaders',
     'cloudinary',
     'cloudinary_storage',
@@ -179,6 +180,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
