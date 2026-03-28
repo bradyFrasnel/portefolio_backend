@@ -1,23 +1,23 @@
 from rest_framework import serializers
-from .models import Project, Category, Technology, Contact, ImageProjet
+from .models import Project, Technology, User
+
+class UserSerializer(serializers.ModelSerializer):
+    """Sérialiseur pour les utilisateurs"""
+    password = serializers.CharField(write_only=True, required=True)
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'password', 'role', 'created_at']
+        read_only_fields = ['id', 'created_at']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
 class TechnologySerializer(serializers.ModelSerializer):
     """Sérialiseur pour les technologies"""
     class Meta:
         model = Technology
-        fields = ['id', 'name', 'logo']
-
-class CategorySerializer(serializers.ModelSerializer):
-    """Sérialiseur pour les catégories"""
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'slug']
-
-class ImageProjetSerializer(serializers.ModelSerializer):
-    """Sérialiseur pour les images de projet"""
-    class Meta:
-        model = ImageProjet
-        fields = ['id', 'image', 'description']
+        fields = ['id', 'nom', 'imageTechnologie', 'created_at']
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Sérialiseur pour les projets simplifié"""
@@ -25,14 +25,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
-            'id', 'titre', 'slug', 'description', 'image_principale', 
-            'technologie', 'lien_github', 'lien_demo', 'date_creation', 
-            'date_mise_a_jour', 'est_publie'
+            'id', 'project_name', 'project_description', 'technology_used', 
+            'project_image', 'github_link', 'demo_link', 'date_creation'
         ]
-        lookup_field = 'slug'
-
-class ContactSerializer(serializers.ModelSerializer):
-    """Sérialiseur pour les contacts"""
-    class Meta:
-        model = Contact
-        fields = '__all__'

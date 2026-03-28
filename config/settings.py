@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Applications tierces
     'rest_framework',
-    'rest_framework.authtoken',  # Ajouté pour Token Authentication
+    'rest_framework.authtoken',
     'corsheaders',
     'cloudinary',
     'cloudinary_storage',
@@ -53,7 +53,6 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # Désactivé pour développement
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -82,14 +81,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Configuration base de données
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
+# Supabase PostgreSQL (pooler recommandé sous Windows — variables dans .env)
 DATABASES = {
-    'default': config(
-        'DATABASE_URL',
-        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
-        cast=dj_database_url.parse
-    )
+    "default": dj_database_url.parse(
+        config(
+            "DATABASE_URL",
+            default=(
+                "postgresql://"
+                f"{config('SUPABASE_DB_USER', default='postgres')}:{config('SUPABASE_DB_PASSWORD')}"
+                f"@{config('SUPABASE_DB_HOST')}:{config('SUPABASE_DB_PORT', default=6543, cast=int)}/"
+                f"{config('SUPABASE_DB_NAME', default='postgres')}"
+            ),
+        ),
+        conn_max_age=60,
+        ssl_require=True,
+    ),
 }
 
 # Validation des mots de passe

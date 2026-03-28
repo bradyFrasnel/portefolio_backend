@@ -1,18 +1,17 @@
 from django.contrib import admin
-from .models import Project, Contact
+from .models import Project, Technology
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     """Configuration de l'admin pour les projets"""
-    list_display = ('titre', 'technologie', 'date_creation', 'est_publie')
-    list_filter = ('est_publie', 'technologie')
-    search_fields = ('titre', 'description', 'technologie')
-    readonly_fields = ('slug',)
+    list_display = ('project_name', 'technology_used', 'date_creation')
+    list_filter = ('date_creation',)
+    search_fields = ('project_name', 'project_description', 'technology_used')
+    readonly_fields = ('date_creation',)
 
-@admin.register(Contact)
-class ContactAdmin(admin.ModelAdmin):
-    """Configuration de l'admin pour les contacts"""
-    list_display = ('nom', 'email', 'type_projet', 'date_envoi', 'traite')
-    list_filter = ('traite', 'type_projet')
-    search_fields = ('nom', 'email', 'message')
-    readonly_fields = ('date_envoi',)
+@admin.register(Technology)
+class TechnologyAdmin(admin.ModelAdmin):
+    """Configuration de l'admin pour les technologies"""
+    list_display = ('nom', 'created_at')
+    search_fields = ('nom',)
+    readonly_fields = ('created_at',)

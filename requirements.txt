@@ -13,8 +13,8 @@ gunicorn==21.2.0
 # Static Files
 whitenoise==6.6.0
 
-# PostgreSQL Database
-dj-database-url==2.1.0
+# Supabase Database
+supabase==2.3.0
 psycopg[binary]==3.2.4
 
 # Image Processing
