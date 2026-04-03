@@ -70,9 +70,20 @@ TEMPLATES = [
 
 # Database
 # Use DATABASE_URL environment variable from Render
-DATABASES = {
-    'default': dj_database_url.parse(config('DATABASE_URL', default='sqlite:///db.sqlite3'))
-}
+DATABASE_URL = config('DATABASE_URL', default='')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
+    }
+else:
+    # Fallback pour développement local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Internationalization
 LANGUAGE_CODE = 'fr-fr'
