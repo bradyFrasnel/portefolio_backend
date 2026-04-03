@@ -81,15 +81,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Configuration base de données
-# Supabase PostgreSQL (pooler recommandé sous Windows — variables dans .env)
+# Supabase PostgreSQL Configuration
+import dj_database_url
+
 DATABASES = {
     "default": dj_database_url.parse(
         config(
             "DATABASE_URL",
             default=(
                 "postgresql://"
-                f"{config('SUPABASE_DB_USER', default='postgres')}:{config('SUPABASE_DB_PASSWORD')}"
-                f"@{config('SUPABASE_DB_HOST')}:{config('SUPABASE_DB_PORT', default=6543, cast=int)}/"
+                f"{config('SUPABASE_DB_USER', default='postgres')}:{config('SUPABASE_DB_PASSWORD', default='')}"
+                f"@{config('SUPABASE_DB_HOST', default='localhost')}:{config('SUPABASE_DB_PORT', default=6543, cast=int)}/"
                 f"{config('SUPABASE_DB_NAME', default='postgres')}"
             ),
         ),
