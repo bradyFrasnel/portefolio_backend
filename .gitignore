@@ -69,6 +69,8 @@ coverage.xml
 .env
 temp/
 logs/
+create_admin.py
+check_hash.py
 
 
 Nouveau.txt
