@@ -10,7 +10,8 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        db_table = 'users'
+        # Évite le conflit avec public.users (ex. Supabase / autres extensions)
+        db_table = "portfolio_users"
     
     def __str__(self):
         return self.username

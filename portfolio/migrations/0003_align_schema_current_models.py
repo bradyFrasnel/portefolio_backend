@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                "db_table": "users",
+                "db_table": "portfolio_users",
             },
         ),
         migrations.CreateModel(
