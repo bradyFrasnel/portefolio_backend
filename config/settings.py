@@ -84,19 +84,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Supabase PostgreSQL Configuration
 import dj_database_url
 
+_database_url = config(
+    "DATABASE_URL",
+    default=(
+        "postgresql://"
+        f"{config('SUPABASE_DB_USER', default='postgres')}:{config('SUPABASE_DB_PASSWORD', default='')}"
+        f"@{config('SUPABASE_DB_HOST', default='localhost')}:{config('SUPABASE_DB_PORT', default=6543, cast=int)}/"
+        f"{config('SUPABASE_DB_NAME', default='postgres')}"
+    ),
+)
+
 DATABASES = {
     "default": dj_database_url.parse(
-        config(
-            "DATABASE_URL",
-            default=(
-                "postgresql://"
-                f"{config('SUPABASE_DB_USER', default='postgres')}:{config('SUPABASE_DB_PASSWORD', default='')}"
-                f"@{config('SUPABASE_DB_HOST', default='localhost')}:{config('SUPABASE_DB_PORT', default=6543, cast=int)}/"
-                f"{config('SUPABASE_DB_NAME', default='postgres')}"
-            ),
-        ),
+        _database_url,
         conn_max_age=60,
-        ssl_require=True,
+        # Ne force sslmode=require que pour Postgres (sinon SQLite plante)
+        ssl_require=_database_url.startswith(("postgres://", "postgresql://")),
     ),
 }
 
@@ -149,17 +152,59 @@ CLOUDINARY_STORAGE = {
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Configuration CORS
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS', 
-    default='http://localhost:5173,http://127.0.0.1:5173',
-    cast=lambda v: [s.strip() for s in v.split(',')]
+def _split_csv_urls(value: str) -> list[str]:
+    return [s.strip() for s in value.split(",") if s.strip()]
+
+
+CORS_ALLOWED_ORIGINS = _split_csv_urls(
+    config(
+        "CORS_ALLOWED_ORIGINS",
+        default="http://localhost:5173,http://127.0.0.1:5173",
+    )
 )
+# En DEBUG : autoriser tout port Vite/Webpack sur localhost / 127.0.0.1 / IPv6 local
+# (évite l’échec CORS si l’origine est http://localhost:5173 mais l’API en 127.0.0.1:8000, etc.)
+if DEBUG:
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^http://localhost:\d+$",
+        r"^http://127\.0\.0\.1:\d+$",
+        r"^http://\[::1\]:\d+$",
+    ]
+else:
+    CORS_ALLOWED_ORIGIN_REGEXES = []
+
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS', 
-    default='http://localhost:5173,http://127.0.0.1:5173',
-    cast=lambda v: [s.strip() for s in v.split(',')]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+CSRF_TRUSTED_ORIGINS = _split_csv_urls(
+    config(
+        "CSRF_TRUSTED_ORIGINS",
+        default="http://localhost:5173,http://127.0.0.1:5173",
+    )
 )
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = list(
+        dict.fromkeys(
+            CSRF_TRUSTED_ORIGINS
+            + [
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://[::1]:5173",
+                "http://localhost:4173",
+                "http://127.0.0.1:4173",
+            ]
+        )
+    )
 
 # Configuration des sessions pour cross-domain
 # En développement (local)
