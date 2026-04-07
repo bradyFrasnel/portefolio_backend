@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.conf import settings
 from .models import Project, Technology, User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -15,16 +16,36 @@ class UserSerializer(serializers.ModelSerializer):
 
 class TechnologySerializer(serializers.ModelSerializer):
     """Sérialiseur pour les technologies"""
+    image_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = Technology
-        fields = ['id', 'nom', 'imageTechnologie', 'created_at']
+        fields = ['id', 'nom', 'imageTechnologie', 'image_url', 'created_at']
+    
+    def get_image_url(self, obj):
+        if obj.imageTechnologie:
+            if obj.imageTechnologie.startswith('http'):
+                return obj.imageTechnologie
+            else:
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(obj.imageTechnologie)
+        return None
 
 class ProjectSerializer(serializers.ModelSerializer):
-    """Sérialiseur pour les projets simplifié"""
-
+    """Sérialiseur pour les projets avec URLs complètes"""
+    image_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = Project
         fields = [
             'id', 'project_name', 'project_description', 'technology_used', 
-            'project_image', 'github_link', 'demo_link', 'date_creation'
+            'project_image', 'image_url', 'github_link', 'demo_link', 'date_creation'
         ]
+    
+    def get_image_url(self, obj):
+        if obj.project_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.project_image.url)
+        return None

@@ -12,6 +12,67 @@ from .serializers import ProjectSerializer, TechnologySerializer, UserSerializer
 
 from .permissions import IsAdminOrReadOnly, IsAuthenticatedOrReadOnly
 
+class CleanupImageView(APIView):
+    """
+    Vue pour nettoyer les URLs d'images corrompues
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        """Nettoyer les URLs contenant localhost"""
+        try:
+            # Nettoyer les projets
+            projects_corrompus = Project.objects.filter(
+                project_image__contains='localhost'
+            )
+            projects_count = projects_corrompus.count()
+            projects_corrompus.update(project_image=None)
+            
+            # Nettoyer les technologies
+            techs_corrompues = Technology.objects.filter(
+                imageTechnologie__contains='localhost'
+            )
+            techs_count = techs_corrompues.count()
+            techs_corrompues.update(imageTechnologie=None)
+            
+            return Response({
+                'success': True,
+                'message': 'Nettoyage effectué',
+                'projects_cleaned': projects_count,
+                'technologies_cleaned': techs_count
+            })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': f'Erreur: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def get(self, request):
+        """Vérifier l'état des données"""
+        try:
+            # Vérifier les projets corrompus
+            projects_corrompus = Project.objects.filter(
+                project_image__contains='localhost'
+            ).count()
+            
+            # Vérifier les technologies corrompues
+            techs_corrompues = Technology.objects.filter(
+                imageTechnologie__contains='localhost'
+            ).count()
+            
+            return Response({
+                'projects_with_localhost': projects_corrompus,
+                'technologies_with_localhost': techs_corrompues,
+                'total_projects': Project.objects.count(),
+                'total_technologies': Technology.objects.count()
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class UserViewSet(viewsets.ModelViewSet):
     """
     Point de terminaison API pour les utilisateurs
@@ -21,6 +82,12 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = PortfolioUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]  # Temporaire pour créer l'admin
+    
+    def get_serializer_context(self):
+        """Ajouter le request au contexte pour les URLs complètes"""
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
     
     def create(self, request, *args, **kwargs):
         """Créer un utilisateur avec mot de passe hashé"""
@@ -111,6 +178,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Optimisation des requêtes"""
         return Project.objects.all().order_by('-date_creation')
+    
+    def get_serializer_context(self):
+        """Ajouter le request au contexte pour les URLs complètes"""
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 class TechnologyViewSet(viewsets.ModelViewSet):
     """
@@ -125,3 +198,9 @@ class TechnologyViewSet(viewsets.ModelViewSet):
     # Filtres et recherche
     filter_backends = [filters.SearchFilter]
     search_fields = ['nom']
+    
+    def get_serializer_context(self):
+        """Ajouter le request au contexte pour les URLs complètes"""
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
