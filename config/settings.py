@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-ax(5c^zm-q7+c_t&0ri%7=+z5ug6$^2(98tdid3a+nrul_-hjq')
 
 # DEBUG
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,portefolio-backend-v0e0.onrender.com', cast=lambda v: [s.strip() for s in v.split(',')])
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -36,7 +36,6 @@ class Project(models.Model):
     project_name = models.CharField(max_length=200, unique=True)
     project_description = models.TextField()
     technology_used = models.TextField(help_text="Technologies utilisées (séparées par des virgules)")
-    # Stocké sur Cloudinary via DEFAULT_FILE_STORAGE (django-cloudinary-storage)
     project_image = models.ImageField(upload_to="projects/main/", blank=True, null=True)
     github_link = models.URLField(blank=True, null=True, help_text="Lien vers le repository GitHub")
     demo_link = models.URLField(blank=True, null=True, help_text="Lien vers la démo en ligne")
