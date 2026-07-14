@@ -117,12 +117,34 @@ STORAGES = {
 
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='https://portefolio-frontend.vercel.app,https://localhost:5173',
-    cast=lambda v: [s.strip() for s in v.split(',')]
-)
-CORS_ALLOW_ALL_ORIGINS = True  # Temporaire pour le développement
+CORS_ALLOWED_ORIGINS = [
+    'https://portefolio-three-xi.vercel.app',
+    'https://portefolio-frontend.vercel.app',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:4173',
+    'http://127.0.0.1:4173',
+]
+
+# Permettre de surcharger via variable d'environnement sur Render
+env_cors = config('CORS_ALLOWED_ORIGINS', default='')
+if env_cors:
+    CORS_ALLOWED_ORIGINS.extend([s.strip() for s in env_cors.split(',') if s.strip()])
+# S'assurer de l'unicité et validité
+CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS))
+
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://portefolio-three-xi.vercel.app',
+    'https://portefolio-frontend.vercel.app',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]
+env_csrf = config('CSRF_TRUSTED_ORIGINS', default='')
+if env_csrf:
+    CSRF_TRUSTED_ORIGINS.extend([s.strip() for s in env_csrf.split(',') if s.strip()])
+CSRF_TRUSTED_ORIGINS = list(set(CSRF_TRUSTED_ORIGINS))
 
 # REST Framework
 REST_FRAMEWORK = {
