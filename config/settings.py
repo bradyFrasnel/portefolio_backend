@@ -198,7 +198,7 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = _split_csv_urls(
     config(
         "CSRF_TRUSTED_ORIGINS",
-        default="http://localhost:5173,http://127.0.0.1:5173",
+        default="http://localhost:5173,http://127.0.0.1:5173,https://portefolio-three-xi.vercel.app,https://portefolio-frontend.vercel.app",
     )
 )
 if DEBUG:
@@ -211,6 +211,8 @@ if DEBUG:
                 "http://[::1]:5173",
                 "http://localhost:4173",
                 "http://127.0.0.1:4173",
+                "https://portefolio-three-xi.vercel.app",
+                "https://portefolio-frontend.vercel.app",
             ]
         )
     )

@@ -4,6 +4,7 @@ Permet d'interagir directement avec Supabase en plus de Django
 """
 
 import os
+# pyrefly: ignore [missing-import]
 from supabase import create_client, Client
 from decouple import config
 

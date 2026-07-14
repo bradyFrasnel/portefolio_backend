@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 @method_decorator(csrf_exempt, name='dispatch')
 class AdminLoginView(APIView):
     """
-    Vue d'authentification par Token pour l'interface admin Vue.js.
+    Vue d'authentification par Token pour l'interface admin.
     """
     permission_classes = [permissions.AllowAny]
     authentication_classes = [] # On n'exige pas de token pour se connecter
@@ -41,7 +41,7 @@ class AdminLoginView(APIView):
             else:
                 return Response({
                     'success': False,
-                    'message': 'Accès refusé : vous n\'êtes pas administrateur'
+                    'message': 'Accès refusé : vous n\'avez pas accès'
                 }, status=status.HTTP_403_FORBIDDEN)
         else:
             return Response({
