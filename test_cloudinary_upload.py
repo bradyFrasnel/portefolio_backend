@@ -24,7 +24,7 @@ def create_test_image():
     img_io.seek(0)
     
     return SimpleUploadedFile(
-        "test_cloudinary.jpg",
+        "test_upload_file.jpg",
         img_io.getvalue(),
         content_type="image/jpeg"
     )
@@ -79,15 +79,13 @@ def test_upload():
     print("🧹 NETTOYAGE")
     print("="*70 + "\n")
     
-    response = input("Voulez-vous supprimer le projet de test ? (o/N) : ").strip().lower()
-    if response == 'o':
-        project.delete()
-        print("   ✅ Projet de test supprimé\n")
-    else:
-        print(f"   ℹ️  Projet conservé (ID: {project.id})")
-        print(f"      Pour le supprimer plus tard : python manage.py shell")
-        print(f"      >>> from portfolio.models import Project")
-        print(f"      >>> Project.objects.get(id={project.id}).delete()\n")
+    # Nettoyage automatique
+    print("="*70)
+    print("🧹 NETTOYAGE")
+    print("="*70 + "\n")
+    
+    project.delete()
+    print("   ✅ Projet de test supprimé\n")
     
     return success
 
