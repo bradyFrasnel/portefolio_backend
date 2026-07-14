@@ -44,8 +44,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
     
     def get_image_url(self, obj):
-        if obj.project_image:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.project_image.url)
-        return None
+        if not obj.project_image:
+            return None
+        url = obj.project_image.url
+        if url.startswith(('http://', 'https://')):
+            return url
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(url)
+        return url

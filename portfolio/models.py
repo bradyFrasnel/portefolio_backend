@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 class User(models.Model):
     username = models.CharField(max_length=100, unique=True)
@@ -46,3 +47,53 @@ class Project(models.Model):
 
     def __str__(self):
         return self.project_name
+
+
+class AnalyticsEvent(models.Model):
+    """
+    Événement de tracking analytics pour le portfolio
+    """
+    EVENT_TYPES = [
+        ('home', 'Home Page View'),
+        ('project_detail', 'Project Detail View'),
+        ('github_click', 'GitHub Link Click'),
+        ('demo_click', 'Demo Link Click'),
+    ]
+    
+    DEVICE_TYPES = [
+        ('mobile', 'Mobile'),
+        ('desktop', 'Desktop'),
+    ]
+    
+    id = models.BigAutoField(primary_key=True)
+    visitor_id = models.UUIDField(db_index=True, help_text="Identifiant unique du visiteur (localStorage)")
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPES, db_index=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    # Relations
+    project = models.ForeignKey(
+        'Project',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='analytics_events',
+        help_text="Projet concerné (null pour home)"
+    )
+    
+    # Données géographiques et techniques
+    country = models.CharField(max_length=2, blank=True, db_index=True, help_text="Code pays ISO 3166-1 alpha-2")
+    browser = models.CharField(max_length=50, blank=True)
+    device_type = models.CharField(max_length=10, choices=DEVICE_TYPES, blank=True)
+    ip_address = models.GenericIPAddressField(help_text="IP du visiteur (non exposée publiquement)")
+    
+    class Meta:
+        db_table = 'analytics_events'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp', 'visitor_id'], name='idx_analytics_time_visitor'),
+            models.Index(fields=['project', 'event_type'], name='idx_analytics_project_event'),
+            models.Index(fields=['country'], name='idx_analytics_country'),
+        ]
+    
+    def __str__(self):
+        return f"{self.event_type} - {self.visitor_id} - {self.timestamp}"
