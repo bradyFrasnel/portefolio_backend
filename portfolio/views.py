@@ -14,60 +14,61 @@ from .permissions import IsAdminOrReadOnly, IsAuthenticatedOrReadOnly
 
 class CleanupImageView(APIView):
     """
-    Vue pour nettoyer les URLs d'images corrompues
+    Vue pour nettoyer les URLs d'images corrompues (localhost, via.placeholder.com, etc.)
     """
     permission_classes = [permissions.AllowAny]
-    
+
+    # Patterns d'URLs invalides à supprimer
+    INVALID_PATTERNS = ['localhost', '127.0.0.1', 'via.placeholder.com', 'placeholder.com']
+
     def post(self, request):
-        """Nettoyer les URLs contenant localhost"""
+        """Nettoyer les URLs d'images invalides dans les projets et technologies"""
         try:
-            # Nettoyer les projets
-            projects_corrompus = Project.objects.filter(
-                project_image__contains='localhost'
-            )
-            projects_count = projects_corrompus.count()
-            projects_corrompus.update(project_image=None)
-            
-            # Nettoyer les technologies
-            techs_corrompues = Technology.objects.filter(
-                imageTechnologie__contains='localhost'
-            )
-            techs_count = techs_corrompues.count()
-            techs_corrompues.update(imageTechnologie=None)
-            
+            projects_count = 0
+            techs_count = 0
+
+            for pattern in self.INVALID_PATTERNS:
+                # Nettoyer les projets
+                qs = Project.objects.filter(project_image__contains=pattern)
+                projects_count += qs.count()
+                qs.update(project_image=None)
+
+                # Nettoyer les technologies
+                qs_tech = Technology.objects.filter(imageTechnologie__contains=pattern)
+                techs_count += qs_tech.count()
+                qs_tech.update(imageTechnologie=None)
+
             return Response({
                 'success': True,
                 'message': 'Nettoyage effectué',
                 'projects_cleaned': projects_count,
-                'technologies_cleaned': techs_count
+                'technologies_cleaned': techs_count,
+                'patterns_checked': self.INVALID_PATTERNS,
             })
-            
+
         except Exception as e:
             return Response({
                 'success': False,
                 'message': f'Erreur: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
     def get(self, request):
-        """Vérifier l'état des données"""
+        """Vérifier l'état des données et compter les URLs invalides"""
         try:
-            # Vérifier les projets corrompus
-            projects_corrompus = Project.objects.filter(
-                project_image__contains='localhost'
-            ).count()
-            
-            # Vérifier les technologies corrompues
-            techs_corrompues = Technology.objects.filter(
-                imageTechnologie__contains='localhost'
-            ).count()
-            
-            return Response({
-                'projects_with_localhost': projects_corrompus,
-                'technologies_with_localhost': techs_corrompues,
+            result = {
                 'total_projects': Project.objects.count(),
-                'total_technologies': Technology.objects.count()
-            })
-            
+                'total_technologies': Technology.objects.count(),
+                'invalid_by_pattern': {}
+            }
+
+            for pattern in self.INVALID_PATTERNS:
+                result['invalid_by_pattern'][pattern] = {
+                    'projects': Project.objects.filter(project_image__contains=pattern).count(),
+                    'technologies': Technology.objects.filter(imageTechnologie__contains=pattern).count(),
+                }
+
+            return Response(result)
+
         except Exception as e:
             return Response({
                 'error': str(e)
