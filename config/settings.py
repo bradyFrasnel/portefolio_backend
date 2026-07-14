@@ -168,7 +168,7 @@ def _split_csv_urls(value: str) -> list[str]:
 CORS_ALLOWED_ORIGINS = _split_csv_urls(
     config(
         "CORS_ALLOWED_ORIGINS",
-        default="http://localhost:5173,http://127.0.0.1:5173",
+        default="http://localhost:5173,http://127.0.0.1:5173,https://portefolio-three-xi.vercel.app,https://portefolio-frontend.vercel.app",
     )
 )
 # En DEBUG : autoriser tout port Vite/Webpack sur localhost / 127.0.0.1 / IPv6 local

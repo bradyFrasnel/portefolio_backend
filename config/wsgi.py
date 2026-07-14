@@ -11,6 +11,10 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+# Utiliser settings_render.py si en production sur Render
+if os.environ.get('RENDER') or not os.environ.get('DEBUG', 'True').lower() == 'true':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings_render')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = get_wsgi_application()
