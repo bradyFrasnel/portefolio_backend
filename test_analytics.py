@@ -68,7 +68,7 @@ def test_analytics_model():
     events_by_type = AnalyticsEvent.objects.filter(event_type='home').count()
     print(f"✓ Home events count: {events_by_type}")
     
-    print("\n🎉 All tests passed! AnalyticsEvent model is working correctly.")
+    print("\n All tests passed! AnalyticsEvent model is working correctly.")
 
 if __name__ == '__main__':
     test_analytics_model()

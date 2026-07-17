@@ -18,7 +18,7 @@ def check_images():
     projects = Project.objects.all()
     
     print(f"\n{'='*70}")
-    print(f"📊 ÉTAT DES IMAGES - Total: {projects.count()} projets")
+    print(f"ÉTAT DES IMAGES - Total: {projects.count()} projets")
     print(f"{'='*70}\n")
     
     cloudinary_count = 0
@@ -49,7 +49,7 @@ def check_images():
             print()
     
     print(f"{'='*70}")
-    print(f"📈 RÉSUMÉ :")
+    print(f"RÉSUMÉ :")
     print(f"  ✅ Sur Cloudinary  : {cloudinary_count}/{projects.count()}")
     print(f"  ⚠️  Locales (à risque): {local_count}/{projects.count()}")
     print(f"  ❌ Manquantes      : {missing_count}/{projects.count()}")
@@ -61,7 +61,7 @@ def check_images():
         print("   Action requise : Ré-uploader ces images via l'interface admin.\n")
     
     if cloudinary_count == projects.count():
-        print("🎉 PARFAIT ! Toutes les images sont sur Cloudinary.")
+        print(" PARFAIT ! Toutes les images sont sur Cloudinary.")
         print("   Vous pouvez déployer en production en toute sécurité !\n")
     
     return cloudinary_count, local_count, missing_count

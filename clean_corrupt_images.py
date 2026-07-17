@@ -18,11 +18,11 @@ from portfolio.models import Project, Technology
 def clean_corrupt_urls():
     """Nettoyer les URLs corrompues dans la base de données"""
     
-    print("🔍 Recherche des URLs corrompues...")
+    print("Recherche des URLs corrompues...")
     print("=" * 60)
     
     # Nettoyer les projets
-    print("\n📦 Nettoyage des projets...")
+    print("\n Nettoyage des projets...")
     projects = Project.objects.all()
     corrupted_projects = 0
     
@@ -43,7 +43,7 @@ def clean_corrupt_urls():
                 corrupted_projects += 1
                 print(f"     ✅ Nettoyé (image mise à None)")
     
-    print(f"\n  📊 {corrupted_projects}/{projects.count()} projets nettoyés")
+    print(f"\n {corrupted_projects}/{projects.count()} projets nettoyés")
     
     # Nettoyer les technologies
     print("\n🔧 Nettoyage des technologies...")
@@ -65,11 +65,11 @@ def clean_corrupt_urls():
                 corrupted_techs += 1
                 print(f"     ✅ Nettoyé (image mise à None)")
     
-    print(f"\n  📊 {corrupted_techs}/{technologies.count()} technologies nettoyées")
+    print(f"\n {corrupted_techs}/{technologies.count()} technologies nettoyées")
     
     print("\n" + "=" * 60)
     print("✅ Nettoyage terminé !")
-    print("\n📝 Prochaines étapes :")
+    print("\n Prochaines étapes :")
     print("   1. Ré-uploader les images via l'interface admin")
     print("   2. Les nouvelles images seront stockées sur Cloudinary")
 

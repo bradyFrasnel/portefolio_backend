@@ -34,7 +34,7 @@ try:
                 else:
                     print(f"✅ Projet OK: {project.project_name}")
         
-        print(f"\n📊 {projects.count()} projets vérifiés")
+        print(f"\n {projects.count()} projets vérifiés")
     
     def fix_technology_images():
         """Corriger les URLs d'images des technologies"""
@@ -56,7 +56,7 @@ try:
                 else:
                     print(f"✅ Technologie OK: {tech.nom}")
         
-        print(f"\n📊 {technologies.count()} technologies vérifiées")
+        print(f"\n {technologies.count()} technologies vérifiées")
     
     if __name__ == '__main__':
         print("🔧 Nettoyage des URLs d'images corrompues...")
@@ -66,13 +66,13 @@ try:
         print("\n" + "=" * 50)
         fix_technology_images()
         
-        print("\n🎉 Nettoyage terminé !")
-        print("📝 Note: Les images corrompues ont été mises à None.")
-        print("🔄 Vous devrez ré-uploader les images via l'API admin.")
+        print("\n✅ Nettoyage terminé !")
+        print(" Note: Les images corrompues ont été mises à None.")
+        print(" Vous devrez ré-uploader les images via l'API admin.")
 
 except Exception as e:
     print(f"❌ Erreur: {e}")
-    print("💡 Essayez d'exécuter avec: python manage.py shell")
-    print("   Puis manuellement:")
-    print("   from portfolio.models import Project")
-    print("   Project.objects.filter(project_image__contains='localhost').update(project_image=None)")
+    print("Essayez d'exécuter avec: python manage.py shell")
+    print(" Puis manuellement:")
+    print(" from portfolio.models import Project")
+    print(" Project.objects.filter(project_image__contains='localhost').update(project_image=None)")

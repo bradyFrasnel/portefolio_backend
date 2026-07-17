@@ -96,7 +96,7 @@ def test_analytics_model():
 if __name__ == "__main__":
     success = test_analytics_model()
     if success:
-        print("\n🎉 All tests passed! AnalyticsEvent model is working correctly.")
+        print("\n All tests passed! AnalyticsEvent model is working correctly.")
     else:
         print("\n❌ Some tests failed. Check the errors above.")
     
