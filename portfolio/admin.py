@@ -4,9 +4,9 @@ from .models import Project, Technology
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     """Configuration de l'admin pour les projets"""
-    list_display = ('project_name', 'technology_used', 'date_creation')
+    list_display = ('project_name', 'date_creation')
     list_filter = ('date_creation',)
-    search_fields = ('project_name', 'project_description', 'technology_used')
+    search_fields = ('project_name', 'project_description')
     readonly_fields = ('date_creation',)
 
 @admin.register(Technology)

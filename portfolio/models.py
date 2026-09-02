@@ -1,27 +1,20 @@
 from django.db import models
 import uuid
 
-class User(models.Model):
-    username = models.CharField(max_length=100, unique=True)
-    password = models.CharField(max_length=255)
-    role = models.CharField(max_length=20, default='user', choices=[
-        ('admin', 'Admin'),
-        ('user', 'User')
-    ])
+class ContactMessage(models.Model):
+    nom = models.CharField(max_length=100)
+    email = models.EmailField()
+    type_projet = models.CharField(max_length=100)
+    message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    
+    is_read = models.BooleanField(default=False)
+
     class Meta:
-        # Évite le conflit avec public.users (ex. Supabase / autres extensions)
-        db_table = "portfolio_users"
-    
+        ordering = ['-created_at']
+        verbose_name = 'Message de contact'
+
     def __str__(self):
-        return self.username
-    
-    def is_authenticated(self):
-        return True
-    
-    def is_staff(self):
-        return self.role == 'admin'
+        return f"Message de {self.nom} ({self.email})"
 
 class Technology(models.Model):
     """Modèle pour les technologies utilisées dans les projets"""
@@ -36,7 +29,7 @@ class Project(models.Model):
     """Modèle principal pour les projets du portfolio"""
     project_name = models.CharField(max_length=200, unique=True)
     project_description = models.TextField()
-    technology_used = models.TextField(help_text="Technologies utilisées (séparées par des virgules)")
+    technologies = models.ManyToManyField(Technology, related_name='projects', blank=True)
     project_image = models.ImageField(upload_to="projects/main/", blank=True, null=True)
     github_link = models.URLField(blank=True, null=True, help_text="Lien vers le repository GitHub")
     demo_link = models.URLField(blank=True, null=True, help_text="Lien vers la démo en ligne")
@@ -97,3 +90,5 @@ class AnalyticsEvent(models.Model):
     
     def __str__(self):
         return f"{self.event_type} - {self.visitor_id} - {self.timestamp}"
+
+

@@ -5,8 +5,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Project, Technology, User as PortfolioUser
-from .serializers import ProjectSerializer, TechnologySerializer, UserSerializer
+from .models import Project, Technology, ContactMessage, AnalyticsEvent
+from .serializers import ProjectSerializer, TechnologySerializer, ContactMessageSerializer, AnalyticsEventSerializer
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from rest_framework.decorators import action
 
 # Vues existantes...
 
@@ -74,53 +77,38 @@ class CleanupImageView(APIView):
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class UserViewSet(viewsets.ModelViewSet):
+from rest_framework.throttling import ScopedRateThrottle
+
+class ContactMessageViewSet(viewsets.ModelViewSet):
     """
-    Point de terminaison API pour les utilisateurs
-    - Création publique (pour l'admin)
-    - Lecture réservée aux admins
+    Point de terminaison API pour les messages de contact.
+    - Création publique
+    - Lecture, modification et suppression réservées aux admins
     """
-    queryset = PortfolioUser.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.AllowAny]  # Temporaire pour créer l'admin
+    queryset = ContactMessage.objects.all().order_by('-created_at')
+    serializer_class = ContactMessageSerializer
     
-    def get_serializer_context(self):
-        """Ajouter le request au contexte pour les URLs complètes"""
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
-    
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    def get_throttles(self):
+        if self.action == 'create':
+            self.throttle_scope = 'contact'
+            return [ScopedRateThrottle()]
+        return super().get_throttles()
+
     def create(self, request, *args, **kwargs):
-        """Créer un utilisateur avec mot de passe hashé"""
-        data = request.data.copy()
-        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
         return Response(
-            {
-                "success": False,
-                "message": "Endpoint désactivé : utilisez /api/admin/login/ (Token DRF) avec un admin Django.",
-            },
-            status=status.HTTP_410_GONE,
+            {"message": "Message envoyé avec succès"},
+            status=status.HTTP_201_CREATED,
+            headers=headers
         )
-        
-    def list(self, request, *args, **kwargs):
-        """Lister tous les utilisateurs avec debug info"""
-        users = self.queryset
-        serializer = self.get_serializer(users, many=True)
-        
-        # Debug info
-        debug_info = []
-        for user in users:
-            debug_info.append({
-                'username': user.username,
-                'password_length': len(user.password) if user.password else 0,
-                'password_empty': not bool(user.password),
-                'role': user.role
-            })
-        
-        return Response({
-            'users': serializer.data,
-            'debug': debug_info
-        })
 
 class AdminLoginView(APIView):
     """
@@ -205,3 +193,84 @@ class TechnologyViewSet(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context.update({"request": self.request})
         return context
+
+class AnalyticsEventViewSet(viewsets.ModelViewSet):
+    """
+    Point de terminaison API pour l'analytique.
+    - Création publique (tracking)
+    - Statistiques (GET) réservées aux administrateurs
+    """
+    queryset = AnalyticsEvent.objects.all()
+    serializer_class = AnalyticsEventSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    def create(self, request, *args, **kwargs):
+        # On copie les données pour pouvoir les modifier (notamment si c'est un QueryDict immuable)
+        data = request.data.copy() if hasattr(request.data, 'copy') else request.data
+        if hasattr(data, '_mutable'):
+            data._mutable = True
+            
+        if 'project_id' in request.data:
+            data['project'] = request.data.get('project_id')
+            
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+            
+        # Par défaut si l'IP n'est pas dispo
+        if not ip:
+            ip = '0.0.0.0'
+            
+        serializer.save(ip_address=ip)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """
+        Retourne les données agrégées pour les graphiques du frontend.
+        """
+        # page views over time (daily)
+        page_views_over_time = (
+            AnalyticsEvent.objects
+            .filter(event_type__in=['home', 'project_detail'])
+            .annotate(date=TruncDate('timestamp'))
+            .values('date')
+            .annotate(views=Count('id'))
+            .order_by('date')
+        )
+        
+        # visits per project
+        visits_per_project = (
+            AnalyticsEvent.objects
+            .filter(event_type='project_detail', project__isnull=False)
+            .values('project__project_name')
+            .annotate(views=Count('id'))
+            .order_by('-views')
+        )
+        
+        # external clicks
+        external_clicks = (
+            AnalyticsEvent.objects
+            .filter(event_type__in=['github_click', 'demo_click'])
+            .values('event_type')
+            .annotate(clicks=Count('id'))
+        )
+        
+        stats_data = {
+            'page_views_over_time': list(page_views_over_time),
+            'visits_per_project': list(visits_per_project),
+            'external_clicks': list(external_clicks),
+        }
+        
+        return Response(stats_data)

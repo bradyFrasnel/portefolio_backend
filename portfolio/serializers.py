@@ -1,19 +1,14 @@
 from rest_framework import serializers
 from django.conf import settings
-from .models import Project, Technology, User
+from .models import Project, Technology, ContactMessage, AnalyticsEvent
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """Sérialiseur pour les utilisateurs"""
-    password = serializers.CharField(write_only=True, required=True)
-
+class ContactMessageSerializer(serializers.ModelSerializer):
+    """Sérialiseur pour les messages de contact"""
     class Meta:
-        model = User
-        fields = ['id', 'username', 'password', 'role', 'created_at']
-        read_only_fields = ['id', 'created_at']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+        model = ContactMessage
+        fields = ['id', 'nom', 'email', 'type_projet', 'message', 'created_at', 'is_read']
+        read_only_fields = ['id', 'created_at', 'is_read']
 
 
 class TechnologySerializer(serializers.ModelSerializer):
@@ -41,13 +36,20 @@ class TechnologySerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    """Sérialiseur pour les projets avec URLs Cloudinary propres"""
+    """SǸrialiseur pour les projets avec URLs Cloudinary propres"""
     image_url = serializers.SerializerMethodField()
+    technologies_details = TechnologySerializer(source='technologies', many=True, read_only=True)
+    technologies = serializers.PrimaryKeyRelatedField(
+        queryset=Technology.objects.all(),
+        many=True,
+        write_only=True,
+        required=False
+    )
 
     class Meta:
         model = Project
         fields = [
-            'id', 'project_name', 'project_description', 'technology_used',
+            'id', 'project_name', 'project_description', 'technologies', 'technologies_details',
             'project_image', 'image_url', 'github_link', 'demo_link', 'date_creation'
         ]
 
@@ -89,3 +91,15 @@ class ProjectSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(url)
         return url
+
+class AnalyticsEventSerializer(serializers.ModelSerializer):
+    """Serializer pour AnalyticsEvent"""
+    
+    class Meta:
+        model = AnalyticsEvent
+        fields = [
+            'id', 'visitor_id', 'event_type', 'timestamp',
+            'project', 'country', 'browser', 'device_type'
+        ]
+        read_only_fields = ['id', 'timestamp', 'country']
+
