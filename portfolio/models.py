@@ -4,6 +4,7 @@ import uuid
 class ContactMessage(models.Model):
     nom = models.CharField(max_length=100)
     email = models.EmailField()
+    telephone = models.CharField(max_length=20, blank=True, default='', help_text="Numéro de téléphone (optionnel)")
     type_projet = models.CharField(max_length=100)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
