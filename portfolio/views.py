@@ -111,7 +111,7 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
             resend.api_key = getattr(settings, 'RESEND_API_KEY', '')
             
             subject = f"Nouveau message Portfolio: {message_obj.type_projet} - {message_obj.nom}"
-            mail_content = f"""Nouveau message de contact recu !
+            mail_content = f"""Vous avez de nouveaux clients !
             
 Nom: {message_obj.nom}
 Email: {message_obj.email}
@@ -134,7 +134,7 @@ Message:
             
         headers = self.get_success_headers(serializer.data)
         return Response(
-            {"message": "Vous aurez une réponse dans les plus brefs délaits. Merci pour votre message !"},
+            {"message": "Vous aurez une réponse dans les plus brefs délaits. Merci !"},
             status=status.HTTP_201_CREATED,
             headers=headers
         )
