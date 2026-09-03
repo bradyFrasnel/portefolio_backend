@@ -187,6 +187,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all().order_by('-date_creation')
     serializer_class = ProjectSerializer
     permission_classes = [IsAdminOrReadOnly]
+    pagination_class = None
     
     # Filtres et recherche
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -212,6 +213,7 @@ class TechnologyViewSet(viewsets.ModelViewSet):
     queryset = Technology.objects.all().order_by('nom')
     serializer_class = TechnologySerializer
     permission_classes = [IsAdminOrReadOnly]
+    pagination_class = None
 
     # Filtres et recherche
     filter_backends = [filters.SearchFilter]
