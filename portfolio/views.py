@@ -104,10 +104,12 @@ class ContactMessageViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         message_obj = serializer.save()
         
-        from django.core.mail import send_mail
+        import resend
         from django.conf import settings
         
         try:
+            resend.api_key = getattr(settings, 'RESEND_API_KEY', '')
+            
             subject = f"Nouveau message Portfolio: {message_obj.type_projet} - {message_obj.nom}"
             mail_content = f"""Nouveau message de contact recu !
             
@@ -119,15 +121,16 @@ Type de projet: {message_obj.type_projet}
 Message:
 {message_obj.message}
             """
-            send_mail(
-                subject,
-                mail_content,
-                settings.DEFAULT_FROM_EMAIL,
-                ['mokumabrady13@gmail.com'],
-                fail_silently=True
-            )
+            
+            params = {
+                "from": "Acme <onboarding@resend.dev>",
+                "to": ["mokumabrady13@gmail.com"],
+                "subject": subject,
+                "text": mail_content
+            }
+            email = resend.Emails.send(params)
         except Exception as e:
-            print("Erreur envoi email:", e)
+            print("Erreur envoi email avec Resend:", e)
             
         headers = self.get_success_headers(serializer.data)
         return Response(
