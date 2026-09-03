@@ -130,11 +130,11 @@ Message:
             }
             email = resend.Emails.send(params)
         except Exception as e:
-            print("Erreur envoi email avec Resend:", e)
+            print("Erreur: Une erreur s'est produite", e)
             
         headers = self.get_success_headers(serializer.data)
         return Response(
-            {"message": "Message envoyé avec succès"},
+            {"message": "Vous aurez une réponse dans les plus brefs délaits. Merci pour votre message !"},
             status=status.HTTP_201_CREATED,
             headers=headers
         )

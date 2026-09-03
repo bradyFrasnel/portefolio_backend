@@ -1,8 +1,3 @@
-"""
-Django settings for production on Render.
-Simplified configuration for deployment.
-"""
-
 from pathlib import Path
 from decouple import config
 import dj_database_url
@@ -193,7 +188,7 @@ if not DEBUG:
     SECURE_REDIRECT_EXEMPT = []
     SECURE_SSL_REDIRECT = True
 
-# Configuration Email pour Render (Supprimée car SMTP bloqué, remplacée par Resend)
+# Configuration Email pour Render
 RESEND_API_KEY = config('RESEND_API_KEY', default='')
 
 
