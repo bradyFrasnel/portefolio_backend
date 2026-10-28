@@ -1,9 +1,12 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
 from .models import Project, Technology, ContactMessage
+
+TEST_PASSWORD = 'test-admin-password-123!'
+
 
 class ProjectModelTest(TestCase):
     def setUp(self):
@@ -46,12 +49,13 @@ class ContactMessageModelTest(TestCase):
     def test_contact_str_method(self):
         self.assertIn("John Doe", str(self.contact))
 
+@override_settings(SECURE_SSL_REDIRECT=False)
 class PortfolioAPITest(APITestCase):
     def setUp(self):
         self.admin_user = User.objects.create_superuser(
             username='admin',
             email='admin@example.com',
-            password='admin123'
+            password=TEST_PASSWORD
         )
         self.project = Project.objects.create(
             project_name="API Test Project",
@@ -64,7 +68,7 @@ class PortfolioAPITest(APITestCase):
         url = reverse('project-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data), 1)
     
     def test_get_project_detail(self):
         url = reverse('project-detail', kwargs={'pk': self.project.pk})
@@ -97,7 +101,7 @@ class PortfolioAPITest(APITestCase):
         url = reverse('technology-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data), 1)
 
     # --- Contact API ---
     def test_create_contact_public(self):
@@ -110,7 +114,7 @@ class PortfolioAPITest(APITestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['message'], 'Message envoyé avec succès')
+        self.assertEqual(response.data['message'], "Vous aurez une réponse dans les plus brefs délaits. Merci !")
         self.assertEqual(ContactMessage.objects.count(), 1)
 
     def test_get_contacts_unauthorized(self):
@@ -127,7 +131,7 @@ class PortfolioAPITest(APITestCase):
     # --- Admin Login ---
     def test_admin_login_success(self):
         url = reverse('admin-login')
-        data = {'username': 'admin', 'password': 'admin123'}
+        data = {'username': 'admin', 'password': TEST_PASSWORD}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('token', response.data)

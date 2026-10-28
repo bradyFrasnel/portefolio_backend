@@ -103,3 +103,9 @@ class AnalyticsEventSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'timestamp', 'country']
 
+
+class LoginSerializer(serializers.Serializer):
+    """Serializer for admin login validation"""
+    username = serializers.CharField(max_length=20, required=True)
+    password = serializers.CharField(max_length=30, required=True, write_only=True)
+

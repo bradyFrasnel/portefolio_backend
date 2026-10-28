@@ -259,6 +259,7 @@ REST_FRAMEWORK = {
         'anon': '20/minute',
         'user': '60/minute',
         'contact': '5/hour',
+        'login': '5/hour',
     },
 }
 

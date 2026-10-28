@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 from .models import Project, Technology, ContactMessage, AnalyticsEvent
 from .serializers import ProjectSerializer, TechnologySerializer, ContactMessageSerializer, AnalyticsEventSerializer
+from portfolio.serializers import LoginSerializer
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from rest_framework.decorators import action
@@ -19,7 +20,7 @@ class CleanupImageView(APIView):
     """
     Vue pour nettoyer les URLs d'images corrompues (localhost, via.placeholder.com, etc.)
     """
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAdminUser]
 
     # Patterns d'URLs invalides à supprimer
     INVALID_PATTERNS = ['localhost', '127.0.0.1', 'via.placeholder.com', 'placeholder.com']
@@ -145,10 +146,14 @@ class AdminLoginView(APIView):
     """
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'login'
     
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
 
         user = authenticate(username=username, password=password)
         if not user or not getattr(user, "is_staff", False):
@@ -251,16 +256,7 @@ class AnalyticsEventViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0].strip()
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-            
-        # Par défaut si l'IP n'est pas dispo
-        if not ip:
-            ip = '0.0.0.0'
-            
+        ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
         serializer.save(ip_address=ip)
         
         headers = self.get_success_headers(serializer.data)
@@ -271,9 +267,14 @@ class AnalyticsEventViewSet(viewsets.ModelViewSet):
         """
         Retourne les données agrégées pour les graphiques du frontend.
         """
+        from django.utils import timezone
+        from datetime import timedelta
+        date_limit = timezone.now() - timedelta(days=90)
+
         # page views over time (daily)
         page_views_over_time = (
             AnalyticsEvent.objects
+            .filter(timestamp__gte=date_limit)
             .filter(event_type__in=['home', 'project_detail'])
             .annotate(date=TruncDate('timestamp'))
             .values('date')
@@ -284,6 +285,7 @@ class AnalyticsEventViewSet(viewsets.ModelViewSet):
         # visits per project
         visits_per_project = (
             AnalyticsEvent.objects
+            .filter(timestamp__gte=date_limit)
             .filter(event_type='project_detail', project__isnull=False)
             .values('project__project_name')
             .annotate(views=Count('id'))
@@ -293,6 +295,7 @@ class AnalyticsEventViewSet(viewsets.ModelViewSet):
         # external clicks
         external_clicks = (
             AnalyticsEvent.objects
+            .filter(timestamp__gte=date_limit)
             .filter(event_type__in=['github_click', 'demo_click'])
             .values('event_type')
             .annotate(clicks=Count('id'))
